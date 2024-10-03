@@ -27,6 +27,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Pane;
 
 /**
  * 
@@ -155,6 +156,56 @@ public abstract class FxControl  {
 		}
 		visible(this.node, isFieldVisible(uiFieldDTO));
 	}
+	
+	public void refreshDependentFields() {
+		boolean isFieldVisible =  isFieldVisible(uiFieldDTO);
+		if(!isFieldVisible) {
+			switch (uiFieldDTO.getType()) {
+				case "documentType":
+					getRegistrationDTo().removeDocument(uiFieldDTO.getId());
+					break;
+				case "biometricsType":
+					List<String> requiredAttributes = requiredFieldValidator.getRequiredBioAttributes(uiFieldDTO, getRegistrationDTo());
+					for(String bioAttribute : uiFieldDTO.getBioAttributes()) {
+						if(!requiredAttributes.contains(bioAttribute))
+							getRegistrationDTo().clearBIOCache(uiFieldDTO.getId(), bioAttribute);
+					}
+					break;
+				default:
+					getRegistrationDTo().removeDemographicField(uiFieldDTO.getId());
+					break;
+			}
+		}
+		
+		if (!uiFieldDTO.isRequired()) {
+			boolean isRequiredField = requiredFieldValidator.isRequiredField(this.uiFieldDTO, getRegistrationDTo());
+		    Node parentNode = this.node; // Store the node reference
+		        for (Node child : ((Pane) parentNode).getChildren()) {
+		        	if(child instanceof VBox) {
+		        		child = ((VBox) child).getChildren().get(0);
+		        	}
+		            if (child instanceof Label) {
+		                Label label = (Label) child;
+		                String labelName = label.getText();
+						if(labelName == null) {
+		                	break;
+		                }
+		                if (isRequiredField) {
+		                    if (!labelName.endsWith("*")) {
+		                        label.setText(labelName + " *");
+		                    }
+		                }
+		                else {
+		                    if (labelName.endsWith("*")) {
+		                        label.setText(labelName.substring(0, labelName.length() - 2));
+		                    }
+		                }
+		            }
+		            break;
+		        }
+		}
+		visible(this.node, isFieldVisible(uiFieldDTO));
+	}
 
 	/**
 	 * Hide the field
@@ -171,6 +222,12 @@ public abstract class FxControl  {
 		LOGGER.info(loggerClassName, APPLICATION_NAME, APPLICATION_ID, "Refreshing fields from fx control");
 		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
 		genericController.refreshFields();
+	}
+	
+	public void refreshDependentFields(List<String> dependentFields) {
+		LOGGER.info(loggerClassName, APPLICATION_NAME, APPLICATION_ID, "Refreshing fields from fx control");
+		GenericController genericController = ClientApplication.getApplicationContext().getBean(GenericController.class);
+		genericController.refreshDependentFields(dependentFields);
 	}
 
 	/**
