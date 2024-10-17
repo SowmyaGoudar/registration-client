@@ -759,6 +759,9 @@ public class GenericController extends BaseController {
 							if (result.isPresent() && result.get() == proceedButton) {
 								// If OK is clicked, proceed to change the tab
 								ignoreChange[0] = true;
+								int newSelection = newValue.intValue() < 0 ? 0 : newValue.intValue();
+								final String newScreenName = tabPane.getTabs().get(newSelection).getId().replace("_tab", EMPTY);
+								tabPane.getTabs().get(newSelection).setDisable(!refreshScreenVisibility(newScreenName));
 								tabPane.getSelectionModel().select(newValue.intValue());
 							} else {
 								// If Cancel is clicked, remain on the current tab
@@ -996,6 +999,7 @@ public class GenericController extends BaseController {
 					Label label = new Label(groupEntry.getKey());
 					label.getStyleClass().add("demoGraphicCustomLabel");
 					label.setPadding(new Insets(0, 0, 0, 55));
+					label.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
 					//label.setPrefWidth(1200);
 					groupFlowPane.add(label, 0, 0, 2, 1);
 				}
