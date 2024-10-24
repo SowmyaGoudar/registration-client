@@ -125,7 +125,8 @@ public class HerofunScanServiceImpl implements SignatureService {
 
 			} catch (InterruptedException e) {
 				LOGGER.error("Failed to open serial port", e);
-				throw new RuntimeException(e);
+				Thread.currentThread().interrupt();
+				return null;
 			}
 		};
 
